@@ -130,10 +130,10 @@ const subtitleVariants = {
 };
 
 const KroniclesPage: React.FC = () => {
-  const { controls } = usePageTransition();
+ const { isAnimating } = usePageTransition();
   
   return (
-    <PageTransition controls={controls}>
+    <PageTransition isActive={isAnimating}>
       <PageContainer>
         <GridOverlay />
         <NeonGlow />

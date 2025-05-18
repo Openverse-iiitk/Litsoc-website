@@ -143,10 +143,18 @@ const subtitleVariants = {
 };
 
 const SubclubsPage: React.FC = () => {
-  const { controls } = usePageTransition();
+  const { isAnimating } = usePageTransition();
   
   return (
-    <PageTransition controls={controls}>
+    <PageTransition isActive={isAnimating}>
+      <div className="background-grid"></div>
+      <div className="background-lines"></div>
+      <div className="background-circuit"></div>
+      <div className="background-orbs"></div>
+      <div className="background-glow"></div>
+      <div className="background-neon"></div>
+      <div className="background-aurora"></div>
+      <div className="background-neon-glow"></div>
       <PageContainer>
         <CircuitLines />
         <Orbs />

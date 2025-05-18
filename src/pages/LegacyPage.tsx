@@ -126,10 +126,12 @@ const subtitleVariants = {
 };
 
 const LegacyPage: React.FC = () => {
-  const { controls } = usePageTransition();
+  const { isAnimating } = usePageTransition();
   
   return (
-    <PageTransition controls={controls}>
+    <PageTransition isActive={isAnimating}>
+      <RetroLines />
+      <GlowingOverlay />
       <PageContainer>
         <RetroLines />
         <GlowingOverlay />

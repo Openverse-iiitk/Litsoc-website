@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import styled, { keyframes } from 'styled-components';
+import styled, {  } from 'styled-components';
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
 import usePageTransition from '../hooks/usePageTransition';
@@ -98,14 +98,14 @@ const FooterText = styled(motion.div)`
   letter-spacing: 1px;
 `;
 
-// Create a shimmer animation keyframe
-const textShimmer = keyframes`
-  0% { text-shadow: 0 0 4px rgba(255, 105, 180, 0.7), 0 0 10px rgba(255, 105, 180, 0.5); }
-  25% { text-shadow: 0 0 4px rgba(0, 255, 255, 0.7), 0 0 10px rgba(0, 255, 255, 0.5); }
-  50% { text-shadow: 0 0 4px rgba(127, 0, 255, 0.7), 0 0 10px rgba(127, 0, 255, 0.5); }
-  75% { text-shadow: 0 0 4px rgba(255, 255, 0, 0.7), 0 0 10px rgba(255, 255, 0, 0.5); }
-  100% { text-shadow: 0 0 4px rgba(255, 105, 180, 0.7), 0 0 10px rgba(255, 105, 180, 0.5); }
-`;
+// Either remove this unused keyframe animation or use it below
+// const textShimmer = keyframes`
+//   0% { text-shadow: 0 0 4px rgba(255, 105, 180, 0.7), 0 0 10px rgba(255, 105, 180, 0.5); }
+//   25% { text-shadow: 0 0 4px rgba(0, 255, 255, 0.7), 0 0 10px rgba(0, 255, 255, 0.5); }
+//   50% { text-shadow: 0 0 4px rgba(127, 0, 255, 0.7), 0 0 10px rgba(127, 0, 255, 0.5); }
+//   75% { text-shadow: 0 0 4px rgba(255, 255, 0, 0.7), 0 0 10px rgba(255, 255, 0, 0.5); }
+//   100% { text-shadow: 0 0 4px rgba(255, 105, 180, 0.7), 0 0 10px rgba(255, 105, 180, 0.5); }
+// `;
 
 // Add this to make the heart animation
 const HeartBeat = styled.span`

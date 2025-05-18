@@ -1,5 +1,4 @@
 
-import React, { type ReactNode } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 const glowAnimation = keyframes`
@@ -7,8 +6,6 @@ const glowAnimation = keyframes`
   50% { filter: drop-shadow(0 0 8px #00ffff) drop-shadow(0 0 12px #00ffff); }
   100% { filter: drop-shadow(0 0 2px #ff00ff) drop-shadow(0 0 4px #ff00ff); }
 `;
-
-
 
 const TextContainer = styled.div`
   position: fixed;

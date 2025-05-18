@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
-import { usePageTransition, usePageTurnEffect } from '../hooks/usePageTransition';
+
 
 interface PageTransitionProps {
   children: ReactNode;
@@ -87,8 +87,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  usePageTurnEffect(contentRef.current, isActive ? 1 : 0);
-
+  
   return (
     <PageWrapper
       ref={wrapperRef}
