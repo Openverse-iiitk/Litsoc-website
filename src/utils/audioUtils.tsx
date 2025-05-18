@@ -14,7 +14,7 @@ export const preloadAudio = (src: string): void => {
 };
 
 // Play an audio file
-export const playAudio = (src: string): void => {
+export const playAudio = (src: string): Promise<void> => {
   if (!audioCache[src]) {
     preloadAudio(src);
   }
@@ -25,11 +25,10 @@ export const playAudio = (src: string): void => {
   audio.pause();
   audio.currentTime = 0;
   
-  // Play the audio with a catch for mobile browsers that require user interaction
-  const playPromise = audio.play();
-  if (playPromise !== undefined) {
-    playPromise.catch(error => {
+  // Return a promise that resolves or rejects based on play status
+  return audio.play()
+    .catch(error => {
       console.warn('Audio playback was prevented:', error);
+      // You might want to show a UI element to let users manually enable audio
     });
-  }
 };

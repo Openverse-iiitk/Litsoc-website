@@ -91,7 +91,7 @@ const FlippableCard: React.FC<FlippableCardProps> = ({ id, title, description, c
   
   // Preload the audio file when component mounts
   useEffect(() => {
-    const audio = new Audio('/music.mp3');
+    const audio = new Audio('public/music.mp3');
     return () => {
       audio.pause();
       audio.src = '';
@@ -101,7 +101,7 @@ const FlippableCard: React.FC<FlippableCardProps> = ({ id, title, description, c
   const handleFlip = (e: React.MouseEvent) => {
     e.preventDefault();
     // Play the flip sound
-    playAudio('/music.mp3');
+    playAudio('public/music.mp3');
     setIsFlipped(!isFlipped);
   };
 
