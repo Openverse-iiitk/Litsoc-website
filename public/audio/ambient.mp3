@@ -1,0 +1,2 @@
+Please manually add an ambient.mp3 file to the public/audio directory for the audio visualizer to work.
+The file should be a simple ambient track that loops well.

@@ -16,7 +16,8 @@ const PageWrapper = styled(motion.div)`
   background-color: var(--bg-color);
   perspective: 1200px;
   transform-style: preserve-3d;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   will-change: transform;
 `;
 
@@ -26,7 +27,8 @@ const PageContent = styled.div`
   background-color: var(--bg-color);
   perspective: 1200px;
   transform-style: preserve-3d;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   will-change: transform;
 
   &::after {

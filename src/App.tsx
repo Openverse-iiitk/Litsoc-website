@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import LegacyPage from './pages/LegacyPage';
 import KroniclesPage from './pages/KroniclesPage';
 import SubclubsPage from './pages/SubclubsPage';
+import SubclubDetailPage from './pages/SubclubDetailPage';
 import GalleryPage from './pages/GalleryPage';
 
 // Styled components
@@ -91,6 +92,7 @@ function App() {
           <Route path="/legacy" element={<LegacyPage />} />
           <Route path="/kronicles" element={<KroniclesPage />} />
           <Route path="/subclubs" element={<SubclubsPage />} />
+          <Route path="/subclubs/:id" element={<SubclubDetailPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
         </Routes>
       </Router>
