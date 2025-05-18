@@ -1,11 +1,29 @@
+/* Import Local Fonts */
+@font-face {
+  font-family: 'Pixelify Sans';
+  src: url('/fonts/PixelifySans-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900; /* Variable font weight range */
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}z
+}
 
 :root {
-  font-family: Arial, Helvetica, sans-serif;
+  /* Colors */
+  --bg-color: #040012;
+  --text-color: #ffffff;
+  --accent-color: #6a11cb;
+  --gradient-primary: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+  
+  /* Typography */
+  --font-heading: 'Pixelify Sans', system-ui;
+  --font-body: 'Pixelify Sans', system-ui;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,17 +35,58 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: black;
+  background-color: var(--bg-color);
   overflow-x: hidden;
   position: relative;
-  font-family: 'Arial', sans-serif;
-  color: white;
+  font-family: var(--font-body);
+  color: var(--text-color);
   scroll-behavior: smooth;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  position: relative;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
 }
 
 h1 {
   font-size: 3.2em;
-  line-height: 1.1;
+}
+
+p {
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gradient-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #2575fc 0%, #6a11cb 100%);
 }
 
 button {
@@ -36,28 +95,128 @@ button {
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-family: var(--font-heading);
+  background-color: rgba(26, 26, 26, 0.8);
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: all 0.25s ease;
+  color: var(--text-color);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+button:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(106, 17, 203, 0.3);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid var(--secondary-color);
+}
+
+/* Animation Keyframes */
+@keyframes pulse {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
   }
-  a:hover {
-    color: #747bff;
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
   }
-  button {
-    background-color: #f9f9f9;
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
   }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5em;
+  }
+  h2 {
+    font-size: 1.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2em;
+  }
+  h2 {
+    font-size: 1.5em;
+  }
+}
+
+/* Text Selection */
+::selection {
+  background: var(--accent-color);
+  color: white;
+  text-shadow: none;
+}
+
+/* Fade Gradient for Long Text */
+.fade-text {
+  mask-image: linear-gradient(to right, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
+}
+
+/* Glowing Text Effect */
+.glow-text {
+  text-shadow: 0 0 10px var(--accent-color);
+}
+
+/* Page Turn Animation Classes */
+.page-turn {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.page-turn.turning {
+  transform: rotateY(-180deg);
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-color);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+}
+
+/* Page Transition Effects */
+.page-transition-enter {
+  opacity: 0;
+  transform: scale(1.1);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-transition-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 300ms, transform 300ms;
 }

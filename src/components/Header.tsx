@@ -23,7 +23,7 @@ const StyledText = styled(motion.h1)`
   color: transparent;
   -webkit-text-stroke: 1px white;
   text-stroke: 1px white;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-heading);
   mix-blend-mode: screen;
   line-height: 1;
   margin: 0;

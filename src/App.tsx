@@ -1,94 +1,50 @@
-import { Suspense, useState, useEffect, useRef } from 'react';
-import { Canvas } from '@react-three/fiber';
-import styled from 'styled-components';
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
-import ModelViewer from './components/ModelViewer';
-import Header from './components/Header';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import styled, { keyframes } from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
+import Navigation from './components/Navigation';
+import HomePage from './pages/HomePage';
+import LegacyPage from './pages/LegacyPage';
+import KroniclesPage from './pages/KroniclesPage';
+import SubclubsPage from './pages/SubclubsPage';
+import GalleryPage from './pages/GalleryPage';
 
-// Styled components for the app layout
-const AppContainer = styled.div`
-  width: 100%;
-  height: 300vh; /* Make it 3x the viewport height for scrolling */
-  margin: 0;
-  padding: 0;
+// Styled components
+const AppWrapper = styled.div`
   position: relative;
-`;
-
-const StickyContainer = styled.div`
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-`;
-
-const BackgroundTransition = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
-  z-index: 1;
-  background-color: black;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
 `;
 
-const CanvasContainer = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 5;
-`;
-
-const ContentSection = styled(motion.div)`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 40%;
-  height: 100%;
-  padding: 4rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  color: black;
-  z-index: 10;
-  pointer-events: none;
-`;
-
-const InfoTitle = styled(motion.h2)`
-  font-size: 3rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-`;
-
-const InfoText = styled(motion.p)`
-  font-size: 1.25rem;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-`;
-
-const LoadingMessage = styled(motion.div)`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 2rem;
-  z-index: 30;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 8px;
+const LoadingScreen = styled(motion.div)`
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg-color);
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  z-index: 9999;
 `;
 
-const ProgressBar = styled.div<{ progress: number }>`
+const LoadingTitle = styled.h2`
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 15px rgba(106, 17, 203, 0.3);
+`;
+
+const LoadingProgressBar = styled.div<{ progress: number }>`
   width: 300px;
   height: 10px;
-  background-color: #333;
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 5px;
   margin-top: 10px;
   position: relative;
@@ -101,61 +57,25 @@ const ProgressBar = styled.div<{ progress: number }>`
     left: 0;
     height: 100%;
     width: ${props => props.progress}%;
-    background-color: white;
+    background: var(--gradient-primary);
     border-radius: 5px;
     transition: width 0.3s ease-in-out;
   }
 `;
 
-const ErrorMessage = styled.div`
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  color: red;
-  font-size: 1rem;
-  z-index: 30;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 10px;
-  border-radius: 4px;
-`;
-
 function App() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [error] = useState<string | null>(null);
-  const containerRef = useRef(null);
   
-  // Setup scroll animation
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
-  
-  // Define animations based on scroll
-  const backgroundColor = useTransform(
-    scrollYProgress,
-    [0, 0.4, 0.6],
-    ["#000000", "#000000", "#ffffff"]
-  );
-  
-  const contentOpacity = useTransform(
-    scrollYProgress,
-    [0.4, 0.7],
-    [0, 1]
-  );
-  
-  // Simulate loading progress
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress(prev => {
-        const newProgress = prev + 1;
-        if (newProgress >= 100) {
+        if (prev >= 100) {
           clearInterval(timer);
-          // Add slight delay before removing loading screen
           setTimeout(() => setLoading(false), 500);
           return 100;
         }
-        return newProgress;
+        return prev + 2;
       });
     }, 50);
 
@@ -163,50 +83,30 @@ function App() {
   }, []);
   
   return (
-    <AppContainer ref={containerRef}>
-      <StickyContainer>
-        <BackgroundTransition style={{ backgroundColor }} />
-        
-        <CanvasContainer>
-          <Canvas>
-            <Suspense fallback={null}>
-              <ModelViewer />
-            </Suspense>
-          </Canvas>
-        </CanvasContainer>
-        
-        <ContentSection style={{ opacity: contentOpacity }}>
-          <InfoTitle initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.3 }}>
-            Literary Society
-          </InfoTitle>
-          <InfoText initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
-            We are a community of creative writers, poets, and literary enthusiasts from IIIT Kottayam.
-          </InfoText>
-          <InfoText initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.7 }}>
-            Our mission is to foster a love for literature and provide a platform for students to express themselves through words.
-          </InfoText>
-          <InfoText initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.9 }}>
-            Join us in exploring the power of language and storytelling!
-          </InfoText>
-        </ContentSection>
-        
-        <Header />
-        
-        <AnimatePresence>
-          {loading && (
-            <LoadingMessage
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.5 } }}
-            >
-              Loading 3D model...
-              <ProgressBar progress={progress} />
-            </LoadingMessage>
-          )}
-        </AnimatePresence>
-        
-        {error && <ErrorMessage>Error: {error}</ErrorMessage>}
-      </StickyContainer>
-    </AppContainer>
+    <AppWrapper>
+      <Router>
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/legacy" element={<LegacyPage />} />
+          <Route path="/kronicles" element={<KroniclesPage />} />
+          <Route path="/subclubs" element={<SubclubsPage />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+        </Routes>
+      </Router>
+      
+      <AnimatePresence>
+        {loading && (
+          <LoadingScreen
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.8 } }}
+          >
+            <LoadingTitle>Literary Society</LoadingTitle>
+            <LoadingProgressBar progress={progress} />
+          </LoadingScreen>
+        )}
+      </AnimatePresence>
+    </AppWrapper>
   );
 }
 
