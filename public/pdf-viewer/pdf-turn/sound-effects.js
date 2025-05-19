@@ -2,60 +2,87 @@
  * Audio manager for the page turning sound effect
  */
 
-// Enable turn.js sound effects with Web Audio API
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+// Create audio context only when needed
+let audioContext = null;
 let pageTurnSound = null;
+let audioInitialized = false;
+
+// Function to initialize the audio system
+function initAudio() {
+  if (audioInitialized) return true;
+  
+  try {
+    // Only create AudioContext when needed (on user interaction)
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    audioInitialized = true;
+    console.log('Audio system initialized');
+    
+    // Start preloading the sound
+    preloadPageTurnSound('/audio/page-turn.mp3')
+      .catch(error => console.warn('Could not preload page turn sound:', error));
+      
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize audio system:', error);
+    return false;
+  }
+}
 
 // Preload sound
 function preloadPageTurnSound(soundUrl) {
+  if (!audioContext) {
+    console.warn('Audio context not initialized');
+    return Promise.reject(new Error('Audio context not initialized'));
+  }
+  
   return fetch(soundUrl)
-    .then(response => response.arrayBuffer())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Failed to fetch sound file: ${response.status} ${response.statusText}`);
+      }
+      return response.arrayBuffer();
+    })
     .then(buffer => audioContext.decodeAudioData(buffer))
     .then(decodedData => {
       pageTurnSound = decodedData;
       console.log('Page turn sound loaded successfully');
-    })
-    .catch(error => console.error('Error loading sound:', error));
+    });
 }
 
 // Play the page turn sound
 function playPageTurnSound() {
-  // Check if audio is enabled (controlled by parent window)
+  // Check if audio is enabled
   if (window.audioEnabled === false) {
-    console.log('Audio is disabled, not playing sound');
-    return;
-  }
-
-  if (!pageTurnSound) {
-    console.warn('Page turn sound not loaded yet');
+    console.log('Audio disabled, not playing sound');
     return;
   }
   
   try {
-    const source = audioContext.createBufferSource();
-    source.buffer = pageTurnSound;
-    
-    // Create gain node for volume control
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = 0.5; // 50% volume
-    
-    // Connect source to gain, then to output
-    source.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    // Play the sound
-    source.start(0);
     console.log('Playing page turn sound');
-  } catch (error) {
-    console.error('Error playing sound:', error);
+    const audio = new Audio('/audio/page-turn.mp3');
+    audio.volume = 0.7;
+    audio.play().catch(function(error) {
+      console.warn('Could not play audio:', error);
+    });
+  } catch (e) {
+    console.warn('Error playing sound:', e);
   }
 }
 
 // Initialize with default sound
 document.addEventListener('DOMContentLoaded', () => {
-  preloadPageTurnSound('/audio/page-turn.mp3')
-    .catch(error => console.error('Could not preload page turn sound:', error));
+  // We'll wait for user interaction before initializing audio
+  // to avoid autoplay restrictions
+  console.log('Audio system ready to initialize on first user interaction');
+  
+  // Initialize on first click/touch anywhere in the document
+  document.addEventListener('click', function initOnFirstInteraction() {
+    initAudio();
+    // Remove this listener after first interaction
+    document.removeEventListener('click', initOnFirstInteraction);
+  }, { once: true });
 });
 
 // Export functions for use by turn.js
 window.playPageTurnSound = playPageTurnSound;
+window.initAudio = initAudio;

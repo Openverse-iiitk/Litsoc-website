@@ -252,7 +252,7 @@ const KroniclesDetailPage: React.FC = () => {
             <Title>{kronicle.title}</Title>
             <Description>{kronicle.description}</Description>
             <Description style={{ fontSize: '0.9rem', opacity: 0.8, marginTop: '0.5rem' }}>
-              Use the navigation controls at the bottom to flip through pages, toggle sound effects, or enter fullscreen mode.
+              Click on the left or right edges of the pages to flip through the document.
             </Description>
             <Button 
               as="a"
