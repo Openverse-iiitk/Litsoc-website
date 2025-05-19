@@ -7,6 +7,13 @@
   <link rel="stylesheet" href="./pdf-turn/pdf-turn.css">
   <script src="./external/pdfjs-2.1.266-dist/build/pdf.js"></script>
   <style>
+    /* A4 dimensions in pixels at 96 DPI: 8.27×11.69 inches = 794×1123 pixels */
+    :root {
+      --a4-width: 900px;
+      --a4-height: 1130px;
+      --viewer-padding: 20px;
+    }
+    
     html, body {
       height: 100%;
       margin: 0;
@@ -22,6 +29,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      margin: 0;
+      padding: var(--viewer-padding);
+      border: none;
+      box-sizing: border-box;
     }
     .bookViewer {
       width: 100%;
@@ -30,30 +41,41 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      margin: 0;
+      padding: 0;
+      border: none;
+      overflow: hidden;
+      max-width: calc(var(--a4-width) * 2 + 40px); /* Two A4 pages plus gap */
+      max-height: var(--a4-height);
     }
+    
+    @media (max-width: 1024px) {
+      .bookViewer {
+        max-width: var(--a4-width);
+      }
+    }
+    
     .shadow {
-      -webkit-box-shadow: 0 0 10px #000;
-      -moz-box-shadow: 0 0 10px #000;
-      -ms-box-shadow: 0 0 10px #000;
-      -o-box-shadow: 0 0 10px #000;
-      box-shadow: 0 0 10px #000;
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      -ms-box-shadow: none;
+      -o-box-shadow: none;
+      box-shadow: none;
     }
     .page {
-      background-color: white;
+      background-color: transparent;
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
       position: relative;
+      margin: 0;
+      padding: 0;
+      border: none;
+      box-shadow: none;
+      overflow: hidden;
     }
     .page:after {
-      content: '';
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 5%, rgba(0,0,0,0) 95%, rgba(0,0,0,0.05) 100%);
-      pointer-events: none;
+      content: none; /* Remove the gradient overlay */
     }
     .page-content {
       width: 100%;
@@ -62,11 +84,18 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      margin: 0;
+      padding: 0;
+      border: none;
     }
     .page-canvas {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      margin: 0;
+      padding: 0;
+      border: none;
+      display: block; /* Remove any default inline spacing */
     }
     .loading-message {
       position: absolute;
@@ -94,7 +123,7 @@
       border-top: 5px solid #fff;
       border-radius: 50%;
       width: 40px;
-      height: 40px;
+      height: 50px;
       animation: spin 1s linear infinite;
       margin: 0 auto;
     }
@@ -251,7 +280,7 @@
     const pdfUrl = urlParams.get('file');
     
     // Initialize global audio flag (will be controlled by parent window)
-    window.audioEnabled = true;
+    window.audioEnabled = false; // Audio disabled by default
     
     let pdfDoc = null;
     let pageRendering = false;
@@ -473,6 +502,10 @@
         canvas.className = 'page-canvas';
         canvas.width = viewport.width;
         canvas.height = viewport.height;
+        canvas.style.margin = '0';
+        canvas.style.padding = '0';
+        canvas.style.border = 'none';
+        canvas.style.display = 'block';
         
         // Clear existing content and add canvas
         const contentDivId = `page-content-${pageNumber}`;
@@ -491,6 +524,9 @@
         }
         
         contentDiv.innerHTML = '';
+        contentDiv.style.margin = '0';
+        contentDiv.style.padding = '0';
+        contentDiv.style.border = 'none';
         contentDiv.appendChild(canvas);
         
         // Render the page
@@ -577,12 +613,17 @@
       
       // Initialize with try-catch
       try {
+        const isMobile = window.innerWidth <= 1024;
+        const display = isMobile ? 'single' : 'double';
+        console.log(`Initializing turn.js with ${display} page display`);
+        
         $('#viewer').turn({
           elevation: 50,
           gradients: true,
           autoCenter: true,
-          display: 'double',
+          display: display,
           acceleration: true,
+          gap: 0, /* Remove gap between pages */
           when: {
             turning: function(event, page, pageObj) {
               console.log('Page turning to:', page);
@@ -632,13 +673,52 @@
         });
         
         // Resize handler
-        $(window).resize(function() {
-          const width = $('#viewerContainer').width();
-          const height = $('#viewerContainer').height();
-          console.log(`Resizing turn.js to ${width}x${height}`);
-          $('#viewer').turn('size', width, height);
+        function handleResize() {
+          const container = $('#viewerContainer');
+          const containerWidth = container.width();
+          const containerHeight = container.height();
+          const isMobile = window.innerWidth <= 1024;
+          
+          // Calculate appropriate size while maintaining A4 aspect ratio
+          const a4Ratio = 1123 / 794; // height/width
+          const availableWidth = containerWidth - (2 * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--viewer-padding')));
+          const availableHeight = containerHeight - (2 * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--viewer-padding')));
+          
+          let width, height;
+          
+          if (isMobile) {
+            // Single page mode
+            if (availableHeight / availableWidth > a4Ratio) {
+              width = availableWidth;
+              height = width * a4Ratio;
+            } else {
+              height = availableHeight;
+              width = height / a4Ratio;
+            }
+          } else {
+            // Double page mode
+            if (availableHeight / (availableWidth/2) > a4Ratio) {
+              width = Math.min(availableWidth, 794 * 2); // Two A4 widths
+              height = (width/2) * a4Ratio;
+            } else {
+              height = availableHeight;
+              width = (height / a4Ratio) * 2;
+            }
+          }
+          
+          console.log(`Resizing turn.js to ${width}x${height}, isMobile: ${isMobile}`);
+          
+          // Update turn.js size and display mode
+          const viewer = $('#viewer');
+          if (viewer.turn('display') !== (isMobile ? 'single' : 'double')) {
+            viewer.turn('display', isMobile ? 'single' : 'double');
+          }
+          viewer.turn('size', width, height);
+          
           renderVisiblePages(); // Re-render pages after resize
-        }).resize();
+        }
+        
+        $(window).resize(handleResize).resize();
         
         // Add event listeners to page corners
         document.querySelectorAll('.page-corner-right').forEach(corner => {

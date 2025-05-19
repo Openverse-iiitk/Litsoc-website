@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Iframe from 'react-iframe';
 import { motion } from 'framer-motion';
-import { playAudio } from '../utils/audioUtils';
+
 
 interface TurnJSFlipBookProps {
   pdfUrl: string;
@@ -38,81 +38,9 @@ const FlipBookFrame = styled(Iframe)`
   }
 `;
 
-const Controls = styled.div`
-  display: flex;
-  align-items: center;
-  margin-top: 15px;
-  padding: 15px 20px;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  position: relative;
-  z-index: 100;
-  
-  @media (max-width: 768px) {
-    padding: 10px;
-    gap: 10px;
-  }
-`;
 
-const ControlButton = styled.button<{ disabled?: boolean }>`
-  background: ${props => props.disabled ? 'rgba(50, 50, 50, 0.7)' : 'rgba(0, 0, 0, 0.7)'};
-  color: ${props => props.disabled ? 'rgba(255, 255, 255, 0.5)' : 'white'};
-  border: 1px solid ${props => props.disabled ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)'};
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s;
-  
-  &:hover {
-    background: ${props => props.disabled ? 'rgba(50, 50, 50, 0.7)' : 'rgba(51, 51, 255, 0.5)'};
-    transform: ${props => props.disabled ? 'none' : 'translateY(-2px)'};
-  }
-  
-  &:active {
-    transform: ${props => props.disabled ? 'none' : 'translateY(1px)'};
-  }
-  
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
 
-const AudioToggle = styled.div`
-  display: flex;
-  align-items: center;
-  color: white;
-  font-size: 14px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 5px 10px;
-  border-radius: 4px;
-  
-  input[type="checkbox"] {
-    accent-color: #3333ff;
-    transform: scale(1.2);
-    margin-right: 8px;
-  }
-`;
 
-const PageInfo = styled.div`
-  color: white;
-  font-size: 14px;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 7px 12px;
-  border-radius: 4px;
-  min-width: 100px;
-  text-align: center;
-  font-weight: bold;
-`;
 
 const ErrorContainer = styled.div`
   padding: 20px;
@@ -144,11 +72,11 @@ const TurnJSFlipBook: React.FC<TurnJSFlipBookProps> = ({ pdfUrl }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [initializationAttempt, setInitializationAttempt] = useState(0); // Track attempts to load
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [audioEnabled, setAudioEnabled] = useState(true);
+  const [audioEnabled] = useState(true);
   const [iframeKey, setIframeKey] = useState(Date.now().toString()); // Used to force iframe reload
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [, setCurrentPage] = useState(1);
+  const [, setTotalPages] = useState(0);
+  const [, setIsFullscreen] = useState(false);
   const [, setIframeInitialized] = useState(false); // Track if iframe is ready
   
   // When the component mounts, we'll need to set up a way to communicate with the iframe
@@ -174,9 +102,7 @@ const TurnJSFlipBook: React.FC<TurnJSFlipBookProps> = ({ pdfUrl }) => {
         setIframeInitialized(true);
         setIsLoading(false);
       } else if (event.data && event.data.type === 'pageFlipped') {
-        if (audioEnabled) {
-          playAudio('/audio/page-turn.mp3');
-        }
+      
         
         // Update page counter
         if (event.data.page) {
@@ -309,33 +235,6 @@ const TurnJSFlipBook: React.FC<TurnJSFlipBookProps> = ({ pdfUrl }) => {
   };
   
   // Function to handle page navigation commands
-  const navigateToPage = (direction: 'prev' | 'next') => {
-    try {
-      const iframe = iframeRef.current;
-      if (iframe && iframe.contentWindow) {
-        console.log(`Sending navigation command: ${direction}`);
-        iframe.contentWindow.postMessage({ 
-          type: 'navigate', 
-          direction 
-        }, '*');
-        
-        // Additionally play sound locally if enabled
-        // This ensures sound plays even if iframe communication fails
-        if (audioEnabled && direction) {
-          playAudio('/audio/page-turn.mp3');
-        }
-        
-        // Update page counter locally even if iframe doesn't respond
-        if (direction === 'prev' && currentPage > 1) {
-          setCurrentPage(prev => prev - 1);
-        } else if (direction === 'next' && currentPage < totalPages) {
-          setCurrentPage(prev => prev + 1);
-        }
-      }
-    } catch (error) {
-      console.error('Error sending navigation command:', error);
-    }
-  };
   
   // Effect to track fullscreen changes
   useEffect(() => {

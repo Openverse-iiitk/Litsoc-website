@@ -1,11 +1,19 @@
 /* turn.js additional*/
 
 .bookViewer{
-	margin: 5px auto 0 auto;
+	margin: 0 auto;
+	padding: 0;
+	box-shadow: none;
+	border: none;
 }
 
 .bookViewer .page{
-	background: #FFF;
+	background: transparent;
+	margin: 0;
+	padding: 0;
+	border: none;
+	box-shadow: none;
+	overflow: hidden;
 }
 
 /* PDF.js additional */
@@ -18,4 +26,38 @@
 	.secondaryToolbarButton.bookFlip::before {
 		content: url(secondaryToolbarButton-bookFlip@2x.png);
 	}
+}
+
+/* Zoom controls */
+
+.zoom-controls {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 4px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  z-index: 100;
+}
+
+.zoom-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.zoom-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+#zoomLevel {
+  color: white;
+  font-family: monospace;
 }
