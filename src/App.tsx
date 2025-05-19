@@ -6,6 +6,7 @@ import Navigation from './components/Navigation';
 import HomePage from './pages/HomePage';
 import LegacyPage from './pages/LegacyPage';
 import KroniclesPage from './pages/KroniclesPage';
+import KroniclesDetailPage from './pages/KroniclesDetailPage';
 import SubclubsPage from './pages/SubclubsPage';
 import SubclubDetailPage from './pages/SubclubDetailPage';
 import GalleryPage from './pages/GalleryPage';
@@ -91,6 +92,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/legacy" element={<LegacyPage />} />
           <Route path="/kronicles" element={<KroniclesPage />} />
+          <Route path="/kronicles/:id" element={<KroniclesDetailPage />} />
           <Route path="/subclubs" element={<SubclubsPage />} />
           <Route path="/subclubs/:id" element={<SubclubDetailPage />} />
           <Route path="/gallery" element={<GalleryPage />} />

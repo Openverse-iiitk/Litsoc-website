@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <title>PDF FlipBook Viewer</title>
+  <link rel="stylesheet" href="./pdf-turn/pdf-turn.css">
+  <script src="./external/pdfjs-2.1.266-dist/build/pdf.js"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #333;
+    }
+    #viewerContainer {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      overflow: hidden;
+    }
+    .bookViewer {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    .shadow {
+      -webkit-box-shadow: 0 0 10px #000;
+      -moz-box-shadow: 0 0 10px #000;
+      -ms-box-shadow: 0 0 10px #000;
+      -o-box-shadow: 0 0 10px #000;
+      box-shadow: 0 0 10px #000;
+    }
+    .page {
+      background-color: white;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+    }
+    .page:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to right, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0) 10%, rgba(0,0,0,0) 90%, rgba(0,0,0,0.05) 100%);
+      pointer-events: none;
+    }
+    .page-content {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .page-canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+        .loading-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 24px;
+      text-align: center;
+    }
+    .error-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ff6b6b;
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+      text-align: center;
+      max-width: 80%;
+    }
+    .loader {
+      border: 5px solid rgba(255, 255, 255, 0.2);
+      border-top: 5px solid #fff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    #controls {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+    
+    #controls:hover {
+      opacity: 1 !important;
+    }
+    
+    .control-button {
+      background-color: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    
+    .control-button:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .page-info {
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      margin: 0 15px;
+    }
+    
+    @media (max-width: 640px) {
+      .control-button {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      
+      .keyboard-hint {
+        display: none;
+      }
+    }
+    .page-number {
+      position: absolute;
+      bottom: 10px;
+      font-family: Arial, sans-serif;
+      color: #666;
+      font-size: 12px;
+      opacity: 0.7;
+      z-index: 10;
+    }
+    .page-number-left {
+      left: 15px;
+    }
+    .page-number-right {
+      right: 15px;
+    }
+    .page-corner {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      top: 0;
+      z-index: 10;
+      cursor: pointer;
+    }
+    .page-corner-right {
+      right: 0;
+      border-radius: 0 0 0 10px;
+      background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.1) 50%);
+    }
+    .page-corner-left {
+      left: 0;
+      border-radius: 0 0 10px 0;
+      background: linear-gradient(225deg, transparent 50%, rgba(0,0,0,0.1) 50%);
+    }
+  </style>
+</head>
+<body>
+  <div id="viewerContainer">
+    <div id="viewer" class="bookViewer shadow"></div>
+    <div id="loading-message" class="loading-message">
+      <div class="loader"></div>
+      <div style="margin-top: 60px;">Loading PDF...</div>
+    </div>
+    <div id="page-info" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); color: white; font-family: Arial; font-size: 14px;"></div>
+  </div>
+
+  <script src="./external/jquery-3.4.1.min.js"></script>
+  <script>
+    // Fallback for jQuery if local version fails
+    if (typeof jQuery === 'undefined') {
+      console.warn('Local jQuery failed to load. Attempting to load from CDN...');
+      const script = document.createElement('script');
+      script.src = 'https://code.jquery.com/jquery-3.4.1.min.js';
+      script.integrity = 'sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=';
+      script.crossOrigin = 'anonymous';
+      document.head.appendChild(script);
+    }
+  </script>
+  <script src="./external/turn.min.js"></script>
+  <script src="./pdf-turn/sound-effects.js"></script>
+  <script>
+    // Check that jQuery and turn.js are loaded
+    if (typeof jQuery === 'undefined') {
+      console.error('jQuery is not loaded!');
+      document.getElementById('loading-message').innerHTML = `
+        <div class="error-message">
+          <h3>Error: jQuery Not Loaded</h3>
+          <p>The PDF viewer requires jQuery, which could not be loaded.</p>
+          <p>Try refreshing the page or use another viewer.</p>
+        </div>
+      `;
+      window.parent.postMessage({ 
+        type: 'pdfError', 
+        message: 'jQuery is not loaded'
+      }, '*');
+    } else if (typeof jQuery.fn.turn === 'undefined') {
+      console.error('turn.js is not loaded!');
+      document.getElementById('loading-message').innerHTML = `
+        <div class="error-message">
+          <h3>Error: turn.js Not Loaded</h3>
+          <p>The PDF viewer requires turn.js, which could not be loaded.</p>
+          <p>Try refreshing the page or use another viewer.</p>
+        </div>
+      `;
+      window.parent.postMessage({ 
+        type: 'pdfError', 
+        message: 'turn.js is not loaded'
+      }, '*');
+    } else {
+      console.log('jQuery and turn.js loaded successfully');
+    }
+    // Set PDF.js workerSrc
+    if (typeof pdfjsLib === 'undefined') {
+      console.error('PDF.js is not loaded!');
+      document.getElementById('loading-message').innerHTML = `
+        <div class="error-message">
+          <h3>Error: PDF.js Not Loaded</h3>
+          <p>The PDF viewer requires PDF.js, which could not be loaded.</p>
+          <p>Check the console for more details.</p>
+          <p>Path: ./external/pdfjs-2.1.266-dist/build/pdf.js</p>
+        </div>
+      `;
+      window.parent.postMessage({ 
+        type: 'pdfError', 
+        message: 'PDF.js is not loaded'
+      }, '*');
+    } else {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = './external/pdfjs-2.1.266-dist/build/pdf.worker.js';
+    }
+    
+    // Parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const pdfUrl = urlParams.get('file');
+    
+    // Initialize global audio flag (will be controlled by parent window)
+    window.audioEnabled = true;
+    
+    let pdfDoc = null;
+    let pageRendering = false;
+    let renderQueue = [];
+    let scale = 1.5;
+    
+    // Function to dynamically load scripts
+    function loadScript(url, callback) {
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = url;
+      
+      script.onload = function() {
+        console.log(`Script loaded: ${url}`);
+        if (callback) callback();
+      };
+      
+      script.onerror = function() {
+        console.error(`Failed to load script: ${url}`);
+        if (callback) callback(new Error(`Failed to load script: ${url}`));
+      };
+      
+      document.head.appendChild(script);
+    }
+    
+    // Function to ensure all required libraries are loaded
+    function ensureLibrariesLoaded(callback) {
+      const requiredLibraries = [
+        { name: 'jQuery', check: function() { return typeof jQuery !== 'undefined'; }, url: 'https://code.jquery.com/jquery-3.4.1.min.js' },
+        { name: 'turn.js', check: function() { return typeof jQuery !== 'undefined' && typeof jQuery.fn.turn === 'function'; }, url: 'https://raw.githack.com/blasten/turn.js/master/turn.min.js' },
+        { name: 'PDF.js', check: function() { return typeof pdfjsLib !== 'undefined'; }, url: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@2.1.266/build/pdf.min.js' }
+      ];
+      
+      let missingLibraries = requiredLibraries.filter(lib => !lib.check());
+      
+      if (missingLibraries.length === 0) {
+        console.log('All required libraries are already loaded');
+        if (callback) callback();
+        return;
+      }
+      
+      console.warn('Missing libraries:', missingLibraries.map(lib => lib.name).join(', '));
+      
+      let loadedCount = 0;
+      
+      missingLibraries.forEach(lib => {
+        loadScript(lib.url, function(error) {
+          loadedCount++;
+          
+          if (error) {
+            console.error(`Failed to load ${lib.name}`);
+          } else {
+            console.log(`Successfully loaded ${lib.name}`);
+          }
+          
+          if (loadedCount === missingLibraries.length) {
+            // All scripts have attempted to load
+            const stillMissing = requiredLibraries.filter(lib => !lib.check());
+            
+            if (stillMissing.length > 0) {
+              console.error('Could not load all required libraries:', stillMissing.map(lib => lib.name).join(', '));
+              document.getElementById('loading-message').innerHTML = `
+                <div class="error-message">
+                  <h3>Failed to Load Required Libraries</h3>
+                  <p>The following libraries could not be loaded: ${stillMissing.map(lib => lib.name).join(', ')}</p>
+                  <p>Try refreshing the page or using a different viewer.</p>
+                </div>
+              `;
+              window.parent.postMessage({ 
+                type: 'pdfError', 
+                message: `Failed to load required libraries: ${stillMissing.map(lib => lib.name).join(', ')}`
+              }, '*');
+            } else {
+              console.log('All required libraries loaded successfully');
+              if (callback) callback();
+            }
+          }
+        });
+      });
+    }
+    
+    // Function to load and display PDF
+    function loadPDF(url) {
+      console.log('Loading PDF from:', url);
+      
+      // Clear the viewer
+      document.getElementById('viewer').innerHTML = '';
+      
+      // Show detailed loading message
+      document.getElementById('loading-message').innerHTML = `
+        <div class="loader"></div>
+        <div style="margin-top: 20px;">Loading PDF from ${url}</div>
+        <div style="font-size: 14px; margin-top: 10px;">Please wait...</div>
+      `;
+      
+      // Load the PDF with better error handling
+      pdfjsLib.getDocument({ url: url, withCredentials: false })
+        .promise.then(function(pdf) {
+          pdfDoc = pdf;
+          console.log('PDF loaded successfully, pages:', pdf.numPages);
+          
+          if (pdf.numPages === 0) {
+            throw new Error('PDF has no pages');
+          }
+          
+          // Create a div for each page
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const pageDiv = document.createElement('div');
+            pageDiv.className = 'page';
+            pageDiv.dataset.pageNumber = i;
+            
+            // Add page number indicator
+            const pageNumber = document.createElement('div');
+            pageNumber.className = 'page-number ' + (i % 2 === 0 ? 'page-number-right' : 'page-number-left');
+            pageNumber.textContent = i;
+            pageDiv.appendChild(pageNumber);
+            
+            // Add page corner for easy flipping
+            const pageCorner = document.createElement('div');
+            pageCorner.className = 'page-corner ' + (i % 2 === 0 ? 'page-corner-left' : 'page-corner-right');
+            pageDiv.appendChild(pageCorner);
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'page-content';
+            contentDiv.id = `page-content-${i}`;
+            
+            pageDiv.appendChild(contentDiv);
+            document.getElementById('viewer').appendChild(pageDiv);
+          }
+          
+          console.log('Pages created, initializing turn.js...');
+          
+          // Initialize turn.js
+          try {
+            initTurnJS();
+            console.log('turn.js initialized successfully');
+            
+            // Update page display
+            const pageDisplay = document.getElementById('page-display');
+            if (pageDisplay) {
+              pageDisplay.textContent = `Page 1 of ${pdf.numPages}`;
+            }
+            
+            // Render the visible pages
+            document.getElementById('loading-message').style.display = 'none';
+            renderVisiblePages();
+            
+            // Notify parent that PDF loaded successfully
+            window.parent.postMessage({ type: 'pdfLoaded', pages: pdf.numPages }, '*');
+          } catch (e) {
+            console.error('Error initializing turn.js:', e);
+            document.getElementById('loading-message').innerHTML = `
+              <div class="error-message">
+                <h3>Error Initializing Viewer</h3>
+                <p>${e.message}</p>
+                <p>Try refreshing the page or use another viewer.</p>
+              </div>
+            `;
+            window.parent.postMessage({ 
+              type: 'pdfError', 
+              message: `Failed to initialize viewer: ${e.message}` 
+            }, '*');
+          }
+        })
+        .catch(function(error) {
+          console.error('Error loading PDF:', error);
+          document.getElementById('loading-message').innerHTML = `
+            <div class="error-message">
+              <h3>Error Loading PDF</h3>
+              <p>${error.message}</p>
+              <p>PDF URL: ${url}</p>
+              <p>Try refreshing the page or use another viewer.</p>
+            </div>
+          `;
+          
+          // Notify parent about the error
+          window.parent.postMessage({ 
+            type: 'pdfError', 
+            message: `Failed to load PDF: ${error.message}` 
+          }, '*');
+        });
+    }
+    
+    // Function to render a page
+    function renderPage(pageNumber) {
+      if (!pdfDoc) {
+        console.warn('Cannot render page, PDF document not loaded');
+        return;
+      }
+      
+      if (pageNumber < 1 || pageNumber > pdfDoc.numPages) {
+        console.warn(`Page number ${pageNumber} out of range (1-${pdfDoc.numPages})`);
+        return;
+      }
+      
+      if (pageRendering) {
+        // Add to render queue if we're already rendering
+        console.log(`Page ${pageNumber} added to render queue`);
+        renderQueue.push(pageNumber);
+        return;
+      }
+      
+      console.log(`Rendering page ${pageNumber}`);
+      pageRendering = true;
+      
+      // Get the page
+      pdfDoc.getPage(pageNumber).then(function(page) {
+        const viewport = page.getViewport({ scale });
+        
+        // Create canvas for rendering
+        const canvas = document.createElement('canvas');
+        canvas.className = 'page-canvas';
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        
+        // Clear existing content and add canvas
+        const contentDivId = `page-content-${pageNumber}`;
+        const contentDiv = document.getElementById(contentDivId);
+        
+        if (!contentDiv) {
+          console.error(`Content div ${contentDivId} not found`);
+          pageRendering = false;
+          
+          // Process next item in queue
+          if (renderQueue.length > 0) {
+            const nextPage = renderQueue.shift();
+            renderPage(nextPage);
+          }
+          return;
+        }
+        
+        contentDiv.innerHTML = '';
+        contentDiv.appendChild(canvas);
+        
+        // Render the page
+        const renderContext = {
+          canvasContext: canvas.getContext('2d'),
+          viewport: viewport
+        };
+        
+        page.render(renderContext).promise.then(function() {
+          console.log(`Page ${pageNumber} rendered successfully`);
+          pageRendering = false;
+          
+          // Render the next page in queue if any
+          if (renderQueue.length > 0) {
+            const nextPage = renderQueue.shift();
+            renderPage(nextPage);
+          }
+        }).catch(function(error) {
+          console.error(`Error rendering page ${pageNumber}:`, error);
+          pageRendering = false;
+          
+          // Try to render the next page in queue
+          if (renderQueue.length > 0) {
+            const nextPage = renderQueue.shift();
+            renderPage(nextPage);
+          }
+        });
+      }).catch(function(error) {
+        console.error(`Error getting page ${pageNumber}:`, error);
+        pageRendering = false;
+        
+        // Try to render the next page in queue
+        if (renderQueue.length > 0) {
+          const nextPage = renderQueue.shift();
+          renderPage(nextPage);
+        }
+      });
+    }
+    
+    // Function to render visible pages
+    function renderVisiblePages() {
+      if (!pdfDoc) {
+        console.warn('No PDF document loaded yet.');
+        return;
+      }
+      
+      try {
+        // In a real implementation, we would determine which pages are visible
+        // For simplicity, we'll just render the first few pages
+        let currentPage = 1;
+        
+        try {
+          // This might fail if turn.js isn't fully initialized
+          currentPage = Math.floor($('#viewer').turn('page'));
+        } catch (e) {
+          console.warn('Could not get current page from turn.js, using default page 1', e);
+        }
+        
+        const startPage = Math.max(1, currentPage - 1);
+        const endPage = Math.min(pdfDoc.numPages, startPage + 2); // Render 3 pages
+        
+        console.log(`Rendering pages ${startPage} to ${endPage}`);
+        
+        for (let i = startPage; i <= endPage; i++) {
+          renderPage(i);
+        }
+      } catch (e) {
+        console.error('Error in renderVisiblePages:', e);
+      }
+    }
+    
+    // Initialize turn.js
+    function initTurnJS() {
+      // Check if the viewer element exists and has children
+      const viewerElement = document.getElementById('viewer');
+      if (!viewerElement || viewerElement.children.length === 0) {
+        throw new Error('Viewer element not found or has no pages');
+      }
+      
+      // Make sure turn.js script is loaded
+      if (typeof $.fn.turn !== 'function') {
+        throw new Error('turn.js library not loaded');
+      }
+      
+      // Initialize with try-catch
+      try {
+        $('#viewer').turn({
+          elevation: 50,
+          gradients: true,
+          autoCenter: true,
+          display: 'double',
+          acceleration: true,
+          when: {
+            turning: function(event, page, pageObj) {
+              console.log('Page turning to:', page);
+              // Play sound effect if available
+              if (window.playPageTurnSound) {
+                window.playPageTurnSound();
+              }
+              
+              // Send message to parent window when page is turned
+              window.parent.postMessage({ type: 'pageFlipped', page: page }, '*');
+            },
+            turned: function(event, page) {
+              console.log('Page turned to:', page);
+              // After turning, render the visible pages
+              renderVisiblePages();
+              
+              // Update page display
+              if (pdfDoc) {
+                const pageDisplay = document.getElementById('page-display');
+                if (pageDisplay) {
+                  pageDisplay.textContent = `Page ${page} of ${pdfDoc.numPages}`;
+                }
+                
+                // Send message to parent with updated page number
+                window.parent.postMessage({ 
+                  type: 'pageFlipped', 
+                  page: page,
+                  totalPages: pdfDoc.numPages
+                }, '*');
+              }
+            }
+          }
+        });
+        
+        console.log('turn.js initialized');
+        
+        // Add keyboard navigation
+        $(document).keydown(function(e) {
+          if (e.keyCode == 37) { // left arrow
+            $('#viewer').turn('previous');
+            console.log('Left arrow pressed, going to previous page');
+          }
+          else if (e.keyCode == 39) { // right arrow
+            $('#viewer').turn('next');
+            console.log('Right arrow pressed, going to next page');
+          }
+        });
+        
+        // Resize handler
+        $(window).resize(function() {
+          const width = $('#viewerContainer').width();
+          const height = $('#viewerContainer').height();
+          console.log(`Resizing turn.js to ${width}x${height}`);
+          $('#viewer').turn('size', width, height);
+          renderVisiblePages(); // Re-render pages after resize
+        }).resize();
+        
+        // Add event listeners to page corners
+        document.querySelectorAll('.page-corner-right').forEach(corner => {
+          corner.addEventListener('click', function() {
+            $('#viewer').turn('next');
+          });
+        });
+        
+        document.querySelectorAll('.page-corner-left').forEach(corner => {
+          corner.addEventListener('click', function() {
+            $('#viewer').turn('previous');
+          });
+        });
+        
+        // Render the first page immediately to show something
+        renderPage(1);
+        
+        return true;
+      } catch (e) {
+        console.error('Error in initTurnJS:', e);
+        throw e;
+      }
+    }
+    
+    // Function to handle messages from the parent window
+    window.addEventListener('message', function(event) {
+      const data = event.data;
+      
+      // Check if we received a navigation command
+      if (data && data.type === 'navigate') {
+        console.log('Received navigation command:', data.direction);
+        
+        try {
+          if (data.direction === 'prev') {
+            $('#viewer').turn('previous');
+          } else if (data.direction === 'next') {
+            $('#viewer').turn('next');
+          }
+        } catch (error) {
+          console.error('Error handling navigation command:', error);
+        }
+      }
+      
+      // Handle audio toggle
+      else if (data && data.type === 'audioToggle') {
+        console.log('Received audio toggle command, enabled:', data.enabled);
+        window.audioEnabled = data.enabled;
+      }
+      
+      // Handle fullscreen request
+      else if (data && data.type === 'fullscreen') {
+        console.log('Received fullscreen command');
+        try {
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            document.documentElement.requestFullscreen();
+          }
+        } catch (error) {
+          console.error('Error handling fullscreen command:', error);
+        }
+      }
+    });
+    
+    // Function to handle fullscreen change events
+    document.addEventListener('fullscreenchange', function() {
+      // Send fullscreen state to parent window
+      window.parent.postMessage({ 
+        type: 'fullscreenChange', 
+        isFullscreen: !!document.fullscreenElement 
+      }, '*');
+    });
+    
+    // Load the PDF when the page loads
+    window.onload = function() {
+      console.log('Window loaded, initializing PDF viewer');
+      
+      // Debug information
+      console.log('Base path:', window.location.href);
+      console.log('jQuery path:', './external/jquery-3.4.1.min.js');
+      console.log('turn.js path:', './external/turn.min.js');
+      console.log('PDF.js path:', './external/pdfjs-2.1.266-dist/build/pdf.js');
+      console.log('PDF.js worker path:', './external/pdfjs-2.1.266-dist/build/pdf.worker.js');
+      
+      // Ensure all libraries are loaded before proceeding
+      ensureLibrariesLoaded(function() {
+        // Set a global timeout to prevent indefinite loading
+        const globalTimeout = setTimeout(function() {
+          if (document.getElementById('loading-message').style.display !== 'none') {
+            console.error('PDF loading timed out after 30 seconds');
+            document.getElementById('loading-message').innerHTML = `
+              <div class="error-message">
+                <h3>Loading Timeout</h3>
+                <p>The PDF viewer took too long to load. This might be due to a large PDF file or slow connection.</p>
+                <p>Try refreshing the page or using a different viewer.</p>
+              </div>
+            `;
+            window.parent.postMessage({ 
+              type: 'pdfError', 
+              message: 'PDF loading timed out after 30 seconds'
+            }, '*');
+          }
+        }, 30000); // 30-second timeout
+        
+        // Configure PDF.js worker
+        if (typeof pdfjsLib !== 'undefined') {
+          if (typeof pdfjsLib.GlobalWorkerOptions !== 'undefined') {
+            // Try local worker first
+            pdfjsLib.GlobalWorkerOptions.workerSrc = './external/pdfjs-2.1.266-dist/build/pdf.worker.js';
+          } else {
+            console.error('PDF.js is loaded but GlobalWorkerOptions is undefined');
+          }
+        }
+        
+        // Attempt to load the PDF
+        if (pdfUrl) {
+          try {
+            loadPDF(pdfUrl);
+          } catch (e) {
+            console.error('Error during PDF load:', e);
+            document.getElementById('loading-message').innerHTML = `
+              <div class="error-message">
+                <h3>Error Loading PDF</h3>
+                <p>${e.message}</p>
+                <p>Try refreshing the page or using a different viewer.</p>
+              </div>
+            `;
+          }
+        } else {
+          console.warn('No PDF URL provided');
+          document.getElementById('loading-message').innerHTML = `
+            <div class="error-message">
+              <h3>No PDF Specified</h3>
+              <p>Please provide a PDF URL in the file parameter.</p>
+            </div>
+          `;
+          window.parent.postMessage({ 
+            type: 'pdfError', 
+            message: 'No PDF URL specified'
+          }, '*');
+        }
+        
+        // Create a fallback option if rendering fails
+        const fallbackTimeout = setTimeout(function() {
+          if (document.getElementById('loading-message').style.display !== 'none') {
+            console.log('Adding fallback direct PDF link');
+            document.getElementById('loading-message').innerHTML += `
+              <div style="margin-top: 20px;">
+                <a href="${pdfUrl}" target="_blank" style="color: white; text-decoration: underline;">
+                  Open PDF directly
+                </a>
+              </div>
+            `;
+          }
+        }, 8000); // Show fallback after 8 seconds
+      });
+    };
+  </script>
+</body>
+</html>

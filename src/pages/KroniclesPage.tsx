@@ -1,7 +1,9 @@
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import styled from 'styled-components';
 import usePageTransition from '../hooks/usePageTransition';
 import PageTransition from '../components/PageTransition';
+import KroniclesCards from '../components/KroniclesCards';
 
 // Styled components
 const PageContainer = styled.div`
@@ -131,6 +133,16 @@ const subtitleVariants = {
 
 const KroniclesPage: React.FC = () => {
  const { isAnimating } = usePageTransition();
+ const [showCards, setShowCards] = useState(false);
+  
+  // Animation to fade in cards after page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowCards(true);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
   
   return (
     <PageTransition isActive={isAnimating}>
@@ -148,6 +160,9 @@ const KroniclesPage: React.FC = () => {
             publications, events, and creative milestones that define the evolving 
             narrative of our society.
           </Subtitle>
+          
+          {/* Kronicles cards with flip animation */}
+          <KroniclesCards showCards={showCards} />
         </ContentWrapper>
       </PageContainer>
     </PageTransition>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edition 1 Cover</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        .cover-container {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #4a00e0 0%, #8e2de2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            position: relative;
+        }
+        .cover-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        .cover-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            max-width: 80%;
+        }
+        .cover-date {
+            font-size: 1rem;
+            position: absolute;
+            bottom: 2rem;
+            letter-spacing: 1px;
+        }
+        .glitch-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                rgba(74, 0, 224, 0.1) 0%, 
+                rgba(142, 45, 226, 0.1) 100%);
+            mix-blend-mode: overlay;
+            pointer-events: none;
+        }
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: 20px 20px;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            pointer-events: none;
+        }
+        .cover-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="cover-container">
+        <div class="grid-overlay"></div>
+        <div class="glitch-effect"></div>
+        <div class="cover-icon">📚</div>
+        <div class="cover-title">Kronicles</div>
+        <div class="cover-subtitle">Edition 1: The Literary Awakening</div>
+        <div class="cover-date">SPRING 2023</div>
+    </div>
+</body>
+</html>
