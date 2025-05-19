@@ -98,7 +98,6 @@ function App() {
           <Route path="/subclubs/:id" element={<SubclubDetailPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/events" element={<EventsPage />} />
-          <Route path="/events" element={<EventsPage />} />
         </Routes>
       </Router>
       

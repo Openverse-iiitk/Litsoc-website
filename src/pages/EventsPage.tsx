@@ -26,6 +26,7 @@ const PageContainer = styled.div`
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 1; // Lower z-index than navigation
 `;
 
 const GlowingOverlay = styled.div`
@@ -35,7 +36,7 @@ const GlowingOverlay = styled.div`
   width: 100%;
   height: 100%;
   background: radial-gradient(circle at center, rgba(0, 255, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
-  pointer-events: none;
+  pointer-events: none; // This ensures clicks pass through
   z-index: 1;
   opacity: 0.8;
 `;
@@ -80,7 +81,7 @@ const ScanlineEffect = styled.div`
     rgba(0, 0, 0, 0.1) 100%
   );
   background-size: 100% 4px;
-  pointer-events: none;
+  pointer-events: none; // Ensure clicks pass through
   opacity: 0.2;
   z-index: 2;
   animation: scanline 10s linear infinite;
@@ -106,7 +107,7 @@ const Vignette = styled.div`
     rgba(0, 0, 0, 0) 0%,
     rgba(0, 0, 0, 0.5) 100%
   );
-  pointer-events: none;
+  pointer-events: none; // Ensure clicks pass through
   z-index: 3;
   opacity: 0.7;
   mix-blend-mode: multiply;
@@ -661,7 +662,7 @@ const ModalOverlay = styled(motion.div)`
   backdrop-filter: blur(10px);
   z-index: 100;
   display: flex;
-  align-items: center;
+  align-items: flex-start;  // Changed from center
   justify-content: center;
   padding: 2rem;
   
@@ -670,15 +671,19 @@ const ModalOverlay = styled(motion.div)`
   }
 `;
 
-const EventModal = styled(motion.div)`
+const EventModal = styled(motion.div)<{ $top?: number; $left?: number }>`
   background: rgba(10, 10, 10, 0.9);
   border-radius: 12px;
   border: 1px solid rgba(0, 255, 255, 0.3);
   width: 100%;
   max-width: 600px;
-  max-height: 90vh;
+  max-height: 80vh;
   overflow-y: auto;
-  position: relative;
+  position: absolute;
+  top: ${props => props.$top ? `${props.$top}px` : '50%'};
+  left: ${props => props.$left ? `${props.$left}px` : '50%'};
+  transform: ${props => props.$top && props.$left ? 
+    'translate(-50%, 0)' : 'translate(-50%, -50%)'};
   
   &::-webkit-scrollbar {
     width: 5px;
@@ -697,13 +702,34 @@ const EventModal = styled(motion.div)`
 const ModalHeader = styled.div`
   padding: 1.5rem;
   border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  position: relative;
 `;
 
 const ModalTitle = styled.h2`
-  font-size: 1.8rem;
   color: white;
+  font-size: 1.8rem;
   margin-bottom: 0.5rem;
   font-family: 'Pixelify Sans', sans-serif;
+`;
+
+const ModalClose = styled(motion.button)`
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  
+  &:hover {
+    background: rgba(255, 0, 0, 0.2);
+  }
 `;
 
 const ModalBody = styled.div`
@@ -712,11 +738,11 @@ const ModalBody = styled.div`
 
 const ModalImage = styled.img`
   width: 100%;
-  height: 200px;
+  height: 250px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 1.5rem;
-  border: 1px solid rgba(0, 255, 255, 0.3);
+  border: 1px solid rgba(0, 255, 255, 0.2);
 `;
 
 const ModalInfo = styled.div`
@@ -724,30 +750,10 @@ const ModalInfo = styled.div`
 `;
 
 const ModalDescription = styled.p`
-  font-size: 1rem;
-  line-height: 1.6;
   color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 1.5rem;
-`;
-
-const ModalClose = styled(motion.button)`
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-  }
+  line-height: 1.8;
+  margin-bottom: 2rem;
+  font-size: 1rem;
 `;
 
 // Animation variants
@@ -774,6 +780,8 @@ const EventsPage: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date(2025, 5, 1)); // June 2025
   const [selectedEvent, setSelectedEvent] = useState<EventType | null>(null);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  // Add state to track click position
+  const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
   
   // Sample events data
   const events: EventType[] = [
@@ -1371,8 +1379,14 @@ const EventsPage: React.FC = () => {
     ));
   };
   
-  const handleDayClick = (day: any) => {
+  const handleDayClick = (day: any, event: React.MouseEvent) => {
     if (day.hasEvent && day.currentMonth) {
+      // Store the click position
+      setClickPosition({ 
+        x: event.clientX, 
+        y: event.clientY 
+      });
+      
       const clickedDate = day.date;
       const eventsOnDay = events.filter(event => 
         event.date.getDate() === clickedDate.getDate() && 
@@ -1539,7 +1553,7 @@ const EventsPage: React.FC = () => {
                     $isToday={day.isToday}
                     whileHover={day.hasEvent ? { scale: 1.05, zIndex: 10 } : {}}
                     whileTap={day.hasEvent ? { scale: 0.95 } : {}}
-                    onClick={() => handleDayClick(day)}
+                    onClick={(e) => handleDayClick(day, e)}  // Pass the event object
                   >
                     <DayNumber color={day.isToday ? '#00ffff' : day.currentMonth ? 'white' : 'rgba(255,255,255,0.4)'}>
                       {day.day}
@@ -1626,6 +1640,8 @@ const EventsPage: React.FC = () => {
           onClick={() => setSelectedEvent(null)}
         >
           <EventModal
+            $top={clickPosition.y + 20} // Position below the click point
+            $left={window.innerWidth / 2} // Center horizontally
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}

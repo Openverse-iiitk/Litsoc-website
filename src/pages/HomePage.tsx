@@ -1,9 +1,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import styled, {  } from 'styled-components';
+import styled from 'styled-components';
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
-import { Link } from 'react-router-dom';
 import usePageTransition from '../hooks/usePageTransition';
 import PageTransition from '../components/PageTransition';
 import ModelViewer from '../components/ModelViewer';
@@ -104,7 +103,7 @@ const FooterText = styled(motion.div)`
 //   0% { text-shadow: 0 0 4px rgba(255, 105, 180, 0.7), 0 0 10px rgba(255, 105, 180, 0.5); }
 //   25% { text-shadow: 0 0 4px rgba(0, 255, 255, 0.7), 0 0 10px rgba(0, 255, 255, 0.5); }
 //   50% { text-shadow: 0 0 4px rgba(127, 0, 255, 0.7), 0 0 10px rgba(127, 0, 255, 0.5); }
-//   75% { text-shadow: 0 0 4px rgba(255, 255, 0, 0.7), 0 0 10px rgba(255, 255, 0, 0.5); }
+//   75% { text-shadow: 0 0 4px rgba(255, 255, 0, 0.7), 0 0 10px rgba(255,255, 0, 0.5); }
 //   100% { text-shadow: 0 0 4px rgba(255, 105, 180, 0.7), 0 0 10px rgba(255, 105, 180, 0.5); }
 // `;
 
@@ -213,50 +212,10 @@ const HomePage: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1, duration: 0.6 }}
               >
-                <motion.button
-                  style={{
-                    background: 'rgba(106, 17, 203, 0.3)',
-                    backdropFilter: 'blur(5px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    padding: isMobile ? '0.5rem 1rem' : '0.75rem 1.5rem',
-                    borderRadius: '4px',
-                    color: 'white',
-                    fontFamily: 'Pixelify Sans',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    fontSize: isMobile ? '0.9rem' : '1.2rem'
-                  }}
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: '0 0 15px rgba(255, 0, 255, 0.7)' 
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <motion.span
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)',
-                      transform: 'translateX(-100%)'
-                    }}
-                    animate={{ translateX: ['100%', '-100%'] }}
-                    transition={{ 
-                      duration: 1.5, 
-                      repeat: Infinity,
-                      repeatDelay: 0.5,
-                      ease: "easeInOut"
-                    }}
-                  />
-                  <Link to="/events" style={{ color: 'inherit', textDecoration: 'none' }}>
-                    Explore Events
-                  </Link>
-                </motion.button>
-                
-                <motion.button
+                <motion.a
+                  href="https://www.instagram.com/litsoc_iiitk?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     background: 'rgba(0, 0, 0, 0.3)',
                     backdropFilter: 'blur(5px)',
@@ -268,7 +227,9 @@ const HomePage: React.FC = () => {
                     cursor: 'pointer',
                     position: 'relative',
                     overflow: 'hidden',
-                    fontSize: isMobile ? '0.9rem' : '1.2rem'
+                    fontSize: isMobile ? '0.9rem' : '1.2rem',
+                    textDecoration: 'none',
+                    display: 'inline-block'
                   }}
                   whileHover={{ 
                     scale: 1.05,
@@ -295,7 +256,7 @@ const HomePage: React.FC = () => {
                     }}
                   />
                   Join Us
-                </motion.button>
+                </motion.a>
               </motion.div>
             </motion.div>
           </ContentSection>
