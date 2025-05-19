@@ -9,6 +9,7 @@ const float = keyframes`
   100% { transform: translateY(0px) rotateX(0deg); }
 `;
 
+// Removed background and border, adjusted padding
 const NavContainer = styled(motion.nav)`
   position: fixed;
   top: 2rem;
@@ -16,13 +17,10 @@ const NavContainer = styled(motion.nav)`
   z-index: 100;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  background: rgba(33, 29, 36, 0.85);
-  padding: 1.5rem;
+  gap: 0.2rem; // Significantly reduced gap for closer spacing
+  padding: 1rem;
   border-radius: 1rem;
-  backdrop-filter: blur(12px);
-  border: 2px solid rgba(255, 0, 255, 0.2);
-  box-shadow: 0 0 20px rgba(255, 0, 255, 0.1);
+  backdrop-filter: blur(8px);
   perspective: 1000px;
   transform-style: preserve-3d;
   animation: ${float} 6s ease-in-out infinite;
@@ -45,9 +43,9 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
   text-decoration: none;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
-  padding: 0.5rem 1rem;
+  padding: 0.3rem 1rem; // Reduced vertical padding
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 0.5px; // Reduced letter spacing
   transform-style: preserve-3d;
   
   &::before {
@@ -57,7 +55,7 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
     top: 50%;
     transform: translateY(-50%);
     width: 3px;
-    height: ${props => props.$active ? '100%' : '0'};
+    height: ${props => props.$active ? '80%' : '0'};
     background: linear-gradient(to bottom, #ff00ff, #00ffff);
     transition: height 0.3s ease;
     box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
@@ -69,7 +67,7 @@ const NavLink = styled(Link)<{ $active?: boolean }>`
     animation: ${glow} 2s ease-in-out infinite;
     
     &::before {
-      height: 100%;
+      height: 80%;
     }
   }
 `;
@@ -91,11 +89,13 @@ const HamburgerButton = styled(motion.button)`
   }
 `;
 
+// Changed the mobile menu to be transparent with blur backdrop
 const MobileMenu = styled(motion.div)`
   display: none;
   position: fixed;
   inset: 0;
-  background: var(--bg-color);
+  background: rgba(4, 0, 18, 0.8); // Semi-transparent background
+  backdrop-filter: blur(12px);
   z-index: 99;
   padding: 4rem 2rem;
   
@@ -104,7 +104,7 @@ const MobileMenu = styled(motion.div)`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2rem;
+    gap: 0.5rem; // Reduced gap for mobile menu links too
   }
 `;
 
