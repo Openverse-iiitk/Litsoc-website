@@ -9,9 +9,9 @@
   <style>
     /* A4 dimensions in pixels at 96 DPI: 8.27×11.69 inches = 794×1123 pixels */
     :root {
-      --a4-width: 900px;
-      --a4-height: 1130px;
-      --viewer-padding: 20px;
+      --a4-width: 1058px;  /* Increased from 794px (794 * 1.33) */
+      --a4-height: 1494px; /* Increased from 1123px (1123 * 1.33) */
+      --viewer-padding: 2px;
     }
     
     html, body {
@@ -45,13 +45,16 @@
       padding: 0;
       border: none;
       overflow: hidden;
-      max-width: calc(var(--a4-width) * 2 + 40px); /* Two A4 pages plus gap */
+      max-width: calc(var(--a4-width) * 2 + 40px); /* Two scaled A4 pages plus gap */
       max-height: var(--a4-height);
     }
     
     @media (max-width: 1024px) {
       .bookViewer {
-        max-width: var(--a4-width);
+        max-width: calc(var(--a4-width) * 1.2); /* Slightly larger on mobile */
+      }
+      :root {
+        --viewer-padding: 0px; /* Remove padding on mobile for more space */
       }
     }
     
