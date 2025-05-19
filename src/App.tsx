@@ -10,6 +10,7 @@ import KroniclesDetailPage from './pages/KroniclesDetailPage';
 import SubclubsPage from './pages/SubclubsPage';
 import SubclubDetailPage from './pages/SubclubDetailPage';
 import GalleryPage from './pages/GalleryPage';
+import EventsPage from './pages/EventsPage';
 
 // Styled components
 const AppWrapper = styled.div`
@@ -96,6 +97,8 @@ function App() {
           <Route path="/subclubs" element={<SubclubsPage />} />
           <Route path="/subclubs/:id" element={<SubclubDetailPage />} />
           <Route path="/gallery" element={<GalleryPage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/events" element={<EventsPage />} />
         </Routes>
       </Router>
       

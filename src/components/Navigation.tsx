@@ -113,6 +113,7 @@ const navItems = [
   { path: '/legacy', label: 'Legacy' },
   { path: '/kronicles', label: 'Kronicles' },
   { path: '/subclubs', label: 'Subclubs' },
+  { path: '/events', label: 'Events' },
   { path: '/gallery', label: 'Gallery' },
 ];
 

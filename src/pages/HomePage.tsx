@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import styled, {  } from 'styled-components';
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
+import { Link } from 'react-router-dom';
 import usePageTransition from '../hooks/usePageTransition';
 import PageTransition from '../components/PageTransition';
 import ModelViewer from '../components/ModelViewer';
@@ -250,7 +251,9 @@ const HomePage: React.FC = () => {
                       ease: "easeInOut"
                     }}
                   />
-                  Explore Events
+                  <Link to="/events" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    Explore Events
+                  </Link>
                 </motion.button>
                 
                 <motion.button
