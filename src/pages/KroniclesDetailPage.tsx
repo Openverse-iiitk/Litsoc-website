@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import usePageTransition from '../hooks/usePageTransition';
 import PageTransition from '../components/PageTransition';
 import TurnJSFlipBook from '../components/TurnJSFlipBook';
+import SimplePDFFlipBook from '../components/SimplePDFFlipBook';
 
 // Data for each Kronicle edition
 const kroniclesData = [
@@ -179,7 +180,7 @@ const itemVariants = {
     y: 0, 
     opacity: 1,
     transition: { 
-      type: "spring", 
+      type: "spring" as const, 
       stiffness: 100, 
       damping: 15 
     }
@@ -267,7 +268,11 @@ const KroniclesDetailPage: React.FC = () => {
           </Header>
           
           <motion.div variants={itemVariants} style={{ width: '100%' }}>
-            <TurnJSFlipBook pdfUrl={fullPdfPath} />
+            {kronicle.id === 'edition2' ? (
+              <SimplePDFFlipBook pdfUrl={fullPdfPath} />
+            ) : (
+              <TurnJSFlipBook pdfUrl={fullPdfPath} />
+            )}
           </motion.div>
         </ContentWrapper>
       </PageContainer>

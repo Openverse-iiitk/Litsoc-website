@@ -58,3 +58,6 @@ logs
 
 # Local Netlify folder
 .netlify
+
+#Ignore vscode AI rules
+.github/copilot-instructions.md
