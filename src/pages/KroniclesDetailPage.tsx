@@ -269,7 +269,40 @@ const KroniclesDetailPage: React.FC = () => {
           
           <motion.div variants={itemVariants} style={{ width: '100%' }}>
             {kronicle.id === 'edition2' ? (
-              <SimplePDFFlipBook pdfUrl={fullPdfPath} />
+              <div style={{
+                background: 'rgba(0,0,0,0.7)',
+                color: 'white',
+                borderRadius: '12px',
+                padding: '2rem',
+                textAlign: 'center',
+                margin: '2rem 0',
+                fontFamily: 'Pixelify Sans, sans-serif',
+                fontSize: '1.2rem',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+              }}>
+                <h2 style={{fontSize:'2rem',marginBottom:'1rem'}}>Kronicles 2 hit 500 downloads!</h2>
+                <p style={{marginBottom:'1.5rem'}}>We ran out of hosting space for this edition.<br />
+                Please use the Google Drive link below to access the PDF for now.</p>
+                <a
+                  href="https://drive.google.com/file/d/1kjvywx4u-Zs-wawt_p3Nvcl7IVb44Wt9/view?usp=sharing"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    background: 'linear-gradient(90deg,#00ffcc,#3333ff)',
+                    color: '#fff',
+                    padding: '0.8rem 2rem',
+                    borderRadius: '6px',
+                    fontWeight: 700,
+                    fontSize: '1.1rem',
+                    textDecoration: 'none',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                    marginTop: '1rem'
+                  }}
+                >
+                  Open on Google Drive
+                </a>
+              </div>
             ) : (
               <TurnJSFlipBook pdfUrl={fullPdfPath} />
             )}

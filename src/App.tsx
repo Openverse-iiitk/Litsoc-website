@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navigation from './components/Navigation';
@@ -66,10 +66,17 @@ const LoadingProgressBar = styled.div<{ progress: number }>`
   }
 `;
 
+function RedirectRoot() {
+  useEffect(() => {
+    window.location.replace('https://litsoc1.web.app');
+  }, []);
+  return null;
+}
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
-  
+
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress(prev => {
@@ -84,13 +91,13 @@ function App() {
 
     return () => clearInterval(timer);
   }, []);
-  
+
   return (
     <AppWrapper>
       <Router>
         <Navigation />
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<RedirectRoot />} />
           <Route path="/legacy" element={<LegacyPage />} />
           <Route path="/kronicles" element={<KroniclesPage />} />
           <Route path="/kronicles/:id" element={<KroniclesDetailPage />} />
@@ -100,7 +107,7 @@ function App() {
           <Route path="/events" element={<EventsPage />} />
         </Routes>
       </Router>
-      
+
       <AnimatePresence>
         {loading && (
           <LoadingScreen
